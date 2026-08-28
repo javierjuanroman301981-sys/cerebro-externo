@@ -1,6 +1,6 @@
-﻿/* =============================================================
-   Cerebro Externo Â· MicroApp
-   app.js â€” 100% cliente. Sin backend, sin base de datos.
+/* =============================================================
+   Cerebro Externo · MicroApp
+   app.js — 100% cliente. Sin backend, sin base de datos.
    Persistencia: localStorage (progreso por usuario en el dispositivo).
    ============================================================= */
 (function () {
@@ -37,7 +37,7 @@
   }
   function dayShort(key) {
     const d = new Date(key + "T12:00:00");
-    return ["Dom", "Lun", "Mar", "MiÃ©", "Jue", "Vie", "SÃ¡b"][d.getDay()];
+    return ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"][d.getDay()];
   }
   function fmtClock(sec) {
     const m = Math.floor(sec / 60);
@@ -122,11 +122,11 @@
     brainDump: [], // {id, text, done, ts}
     alerts: seedAlerts(),
     blocks: [], // {id, title, icon, done, ts}
-    history: {}, // dateKey -> nÂº de micro-bloques completados
+    history: {}, // dateKey -> nº de micro-bloques completados
     notifications: [], // {id, title, body, ts, read}
     browserNotify: false,
     timer: null, // {blockId, total, remaining, running}
-    // --- Perfil (se completa desde la secciÃ³n Perfil) ---
+    // --- Perfil (se completa desde la sección Perfil) ---
     profile: {
       photo: null,                 // dataURL de la foto o null
       location: { country: "", city: "" },
@@ -169,48 +169,48 @@
   }
 
   /* ============================================================
-     4. PLANTILLAS (Paso 1 de activaciÃ³n)
+     4. PLANTILLAS (Paso 1 de activación)
      ============================================================ */
   const TEMPLATES = {
     bebes: {
-      name: "Con bebÃ© en casa",
-      emoji: "ðŸ¼",
+      name: "Con bebé en casa",
+      emoji: "🍼",
       desc: "Micro-bloques cortos alrededor de las siestas y las tomas.",
       blocks: [
-        "Preparar el bolso de paÃ±ales",
+        "Preparar el bolso de pañales",
         "Ordenar la zona de juego (5 min)",
-        "Dejar lista una comida rÃ¡pida",
+        "Dejar lista una comida rápida",
         "Beber un vaso de agua",
         "5 min de estiramiento",
-        "Anotar 3 pendientes de maÃ±ana",
+        "Anotar 3 pendientes de mañana",
       ],
       alerts: { "Beber agua": 60, "Bloque de orden (5 min)": 120, "Tiempo para ti": 180 },
     },
     homeoffice: {
-      name: "Home office",
-      emoji: "ðŸ’»",
+      name: "Trabajo desde casa",
+      emoji: "💻",
       desc: "Bloques de foco con pausas para el cuerpo y la mente.",
       blocks: [
-        "Definir la tarea #1 del dÃ­a",
+        "Definir la tarea #1 del día",
         "Bloque de foco: 5 min de arranque",
         "Pausa visual 20-20-20",
         "Responder mensajes pendientes",
         "Ordenar el escritorio",
-        "Cierre del dÃ­a: anotar 3 logros",
+        "Cierre del día: anotar 3 logros",
       ],
       alerts: { "Beber agua": 90, "Pausa para respirar": 90, "Tiempo para ti": 240 },
     },
     varios: {
       name: "Varios hijos",
-      emoji: "ðŸ‘¨â€ðŸ‘©â€ðŸ‘§â€ðŸ‘¦",
+      emoji: "👨‍👩‍👧‍👦",
       desc: "Coordina colegio, comidas y tareas sin perder el hilo.",
       blocks: [
         "Preparar mochilas y uniformes",
         "Revisar la agenda escolar",
         "Dejar la cena decidida",
-        "Bloque de tareas con los niÃ±os",
+        "Bloque de tareas con los niños",
         "Ordenar zonas comunes (5 min)",
-        "Preparar la ropa de maÃ±ana",
+        "Preparar la ropa de mañana",
       ],
       alerts: { "Beber agua": 90, "Bloque de orden (5 min)": 150, "Tiempo para ti": 240 },
     },
@@ -232,8 +232,8 @@
         }
       });
     });
-    pushNotif("Plantilla importada", `â€œ${tpl.name}â€ estÃ¡ lista. Ya tienes tus micro-bloques cargados.`, "template");
-    toast(`Plantilla â€œ${tpl.name}â€ importada`, "ok");
+    pushNotif("Plantilla importada", `“${tpl.name}” está lista. Ya tienes tus micro-bloques cargados.`, "template");
+    toast(`Plantilla “${tpl.name}” importada`, "ok");
   }
 
   /* ============================================================
@@ -277,20 +277,20 @@
       return;
     }
     if (st === "denied") {
-      toast("EstÃ¡n bloqueadas. ActÃ­valas desde los ajustes de este sitio en tu navegador.", "warn");
+      toast("Están bloqueadas. Actívalas desde los ajustes de este sitio en tu navegador.", "warn");
       return;
     }
     try {
       const perm = await Notification.requestPermission();
       set((s) => { s.browserNotify = perm === "granted"; });
-      toast(perm === "granted" ? "Notificaciones del sistema activadas" : "No se concediÃ³ el permiso", perm === "granted" ? "ok" : "warn");
+      toast(perm === "granted" ? "Notificaciones del sistema activadas" : "No se concedió el permiso", perm === "granted" ? "ok" : "warn");
     } catch (e) {
-      toast("Este navegador no permitiÃ³ pedir el permiso.", "warn");
+      toast("Este navegador no permitió pedir el permiso.", "warn");
     }
   }
 
   /* ============================================================
-     6. MOTOR DE ALERTAS (funciona mientras la app estÃ¡ abierta)
+     6. MOTOR DE ALERTAS (funciona mientras la app está abierta)
      ============================================================ */
   function alertsTick() {
     if (!state.user.name) return;
@@ -301,8 +301,8 @@
       if (now - (a.last || 0) >= a.every * 60000) {
         a.last = now;
         fired = true;
-        pushNotif("Recordatorio: " + a.label, "Tu cerebro externo te avisa. TÃ³mate el micro-bloque cuando puedas.", a.icon);
-        toast(`â° ${a.label}`, "info");
+        pushNotif("Recordatorio: " + a.label, "Tu cerebro externo te avisa. Tómate el micro-bloque cuando puedas.", a.icon);
+        toast(`⏰ ${a.label}`, "info");
       }
     });
     if (fired) save();
@@ -313,7 +313,7 @@
     a.last = Date.now();
     save();
     pushNotif("Recordatorio: " + a.label, "Aviso de prueba enviado correctamente.", a.icon);
-    toast(`â° ${a.label}`, "info");
+    toast(`⏰ ${a.label}`, "info");
   }
 
   /* ============================================================
@@ -352,7 +352,7 @@
         save();
         render();
         pushNotif("Micro-bloque completado", "5 minutos bien invertidos. Una tarea menos en tu cabeza.", "check");
-        toast("Â¡Micro-bloque completado! ðŸŽ‰", "ok");
+        toast("¡Micro-bloque completado! 🎉", "ok");
         confetti();
       }
     }, 1000);
@@ -395,7 +395,7 @@
     if (!b) return;
     completeBlock(id, !b.done);
     render();
-    if (b.done) { toast("Hecho âœ“", "ok"); if (!prefersReduced) confetti(6); }
+    if (b.done) { toast("Hecho ✓", "ok"); if (!prefersReduced) confetti(6); }
   }
   function addBlock(title) {
     title = title.trim();
@@ -408,7 +408,7 @@
   }
 
   /* ============================================================
-     9. ESTADÃSTICAS DERIVADAS
+     9. ESTADÍSTICAS DERIVADAS
      ============================================================ */
   function stats() {
     const k = todayKey();
@@ -416,7 +416,7 @@
     const totalToday = state.blocks.length;
     const pct = totalToday ? Math.round((doneToday / totalToday) * 100) : 0;
     const histDone = state.history[k] || 0;
-    // Racha: dÃ­as consecutivos (terminando hoy o ayer) con >=1 completado
+    // Racha: días consecutivos (terminando hoy o ayer) con >=1 completado
     let streak = 0;
     const d = new Date();
     if (!(state.history[todayKey(d)] > 0)) d.setDate(d.getDate() - 1);
@@ -493,12 +493,12 @@
     const s = stats();
     const tpl = state.template ? TEMPLATES[state.template].name : "sin plantilla";
     return [
-      `âœ¨ Mi dÃ­a con Cerebro Externo â€” ${state.user.name}`,
+      `✨ Mi día con Cerebro Externo — ${state.user.name}`,
       `Plantilla: ${tpl}`,
       `Micro-bloques completados hoy: ${s.doneToday}/${s.totalToday} (${s.pct}%)`,
       `Pendientes fuera de mi cabeza: ${state.brainDump.length}`,
       `Alertas activas: ${s.activeAlerts}`,
-      `Racha: ${s.streak} ${s.streak === 1 ? "dÃ­a" : "dÃ­as"}`,
+      `Racha: ${s.streak} ${s.streak === 1 ? "día" : "días"}`,
     ].join("\n");
   }
   async function copySummary() {
@@ -521,7 +521,7 @@
       catch (e) { /* cancelado */ }
     } else {
       await copySummary();
-      toast("Compartir no disponible: se copiÃ³ el resumen", "info");
+      toast("Compartir no disponible: se copió el resumen", "info");
     }
   }
 
@@ -529,17 +529,17 @@
      12. ROUTER (hash)
      ============================================================ */
   const ROUTES = {
-    inicio: { title: "Inicio", subtitle: "GuÃ­a rÃ¡pida y tu resumen de hoy", navHint: "GuÃ­a y resumen", icon: "home", render: viewInicio },
-    volcado: { title: "Volcado mental", subtitle: "SacÃ¡ de la cabeza lo que tenÃ©s pendiente", navHint: "Lo que tenÃ©s en la cabeza", icon: "brain", render: viewVolcado },
-    plantillas: { title: "Plantillas", subtitle: "Sets listos para ordenar una situaciÃ³n", navHint: "Estructuras listas para usar", icon: "template", render: viewPlantillas },
-    alertas: { title: "Alertas", subtitle: "Recordatorios de tus tareas invisibles", navHint: "Recordatorios automÃ¡ticos", icon: "bell", render: viewAlertas },
-    microbloques: { title: "Micro-bloques", subtitle: "Acciones de 5 minutos para avanzar", navHint: "AvanzÃ¡ de a 5 minutos", icon: "timer", render: viewMicrobloques },
+    inicio: { title: "Inicio", subtitle: "Guía rápida y tu resumen de hoy", navHint: "Guía y resumen", icon: "home", render: viewInicio },
+    volcado: { title: "Volcado mental", subtitle: "Sacá de la cabeza lo que tenés pendiente", navHint: "Lo que tenés en la cabeza", icon: "brain", render: viewVolcado },
+    plantillas: { title: "Plantillas", subtitle: "Sets listos para ordenar una situación", navHint: "Estructuras listas para usar", icon: "template", render: viewPlantillas },
+    alertas: { title: "Alertas", subtitle: "Recordatorios de tus tareas invisibles", navHint: "Recordatorios automáticos", icon: "bell", render: viewAlertas },
+    microbloques: { title: "Micro-bloques", subtitle: "Acciones de 5 minutos para avanzar", navHint: "Avanzá de a 5 minutos", icon: "timer", render: viewMicrobloques },
     progreso: { title: "Progreso", subtitle: "Tu constancia y tu racha", navHint: "Tu constancia", icon: "chart", render: viewProgreso },
-    fundamento: { title: "Fundamento", subtitle: "El mÃ©todo en 5 capÃ­tulos cortos", navHint: "El mÃ©todo, explicado", icon: "book", render: viewFundamento },
+    fundamento: { title: "Fundamento", subtitle: "El método en 5 capítulos cortos", navHint: "El método, explicado", icon: "book", render: viewFundamento },
     ajustes: { title: "Ajustes", subtitle: "Apariencia y control de tus datos", navHint: "Apariencia y datos", icon: "settings", render: viewAjustes },
-    perfil: { title: "Perfil", subtitle: "Tu informaciÃ³n personal", navHint: "Tu informaciÃ³n", icon: "user", render: viewPerfil },
+    perfil: { title: "Perfil", subtitle: "Tu información personal", navHint: "Tu información", icon: "user", render: viewPerfil },
   };
-  // El menÃº lateral no cambia: "perfil" se abre desde la tarjeta de usuaria, no desde el menÃº.
+  // El menú lateral no cambia: "perfil" se abre desde la tarjeta de usuaria, no desde el menú.
   const NAV_ORDER = ["inicio", "volcado", "plantillas", "alertas", "microbloques", "progreso", "fundamento", "ajustes"];
 
   function currentRoute() {
@@ -561,7 +561,7 @@
      13. RENDER PRINCIPAL
      ============================================================ */
   function render() {
-    if (!state.user.name) return; // aÃºn en onboarding
+    if (!state.user.name) return; // aún en onboarding
     const route = currentRoute();
     const def = ROUTES[route];
 
@@ -582,9 +582,9 @@
     // Userchip
     $("#avatar").textContent = state.user.name[0] || "?";
     $("#userChipName").textContent = state.user.name;
-    $("#userChipStreak").textContent = `Racha de ${s.streak} ${s.streak === 1 ? "dÃ­a" : "dÃ­as"}`;
+    $("#userChipStreak").textContent = `Racha de ${s.streak} ${s.streak === 1 ? "día" : "días"}`;
 
-    // Barra del dÃ­a
+    // Barra del día
     $("#dayFill").style.width = s.pct + "%";
 
     // Campana
@@ -603,7 +603,7 @@
   function renderNotifList() {
     const list = $("#notifList");
     if (!state.notifications.length) {
-      list.innerHTML = `<p class="popover__empty">Sin notificaciones todavÃ­a.<br>Tus alertas aparecerÃ¡n aquÃ­.</p>`;
+      list.innerHTML = `<p class="popover__empty">Sin notificaciones todavía.<br>Tus alertas aparecerán aquí.</p>`;
       return;
     }
     list.innerHTML = state.notifications.map((n) => `
@@ -622,8 +622,8 @@
      ============================================================ */
   function greetingByHour() {
     const h = new Date().getHours();
-    if (h < 6) return "AÃºn de madrugada";
-    if (h < 12) return "Buenos dÃ­as";
+    if (h < 6) return "Aún de madrugada";
+    if (h < 12) return "Buenos días";
     if (h < 19) return "Buenas tardes";
     return "Buenas noches";
   }
@@ -632,14 +632,14 @@
     const act = [
       { k: "template", label: "Importa tu plantilla", hint: "Elige el ritmo que se parece a tu vida", route: "plantillas" },
       { k: "alerts", label: "Activa tus alertas", hint: "Agua, orden, medicinas, tiempo propio", route: "alertas" },
-      { k: "firstBlock", label: "Ejecuta tu primer micro-bloque", hint: "Solo 5 minutos, sin presiÃ³n", route: "microbloques" },
+      { k: "firstBlock", label: "Ejecuta tu primer micro-bloque", hint: "Solo 5 minutos, sin presión", route: "microbloques" },
     ];
     const resume = state.timer
       ? `<div class="card card--brand mt-16">
            <div class="spread wrap">
              <div>
                <div class="card__title" style="color:#fff">Tienes un micro-bloque en marcha</div>
-               <p class="muted">${esc(blockTitle(state.timer.blockId))} Â· ${fmtClock(state.timer.remaining)} restantes</p>
+               <p class="muted">${esc(blockTitle(state.timer.blockId))} · ${fmtClock(state.timer.remaining)} restantes</p>
              </div>
              <button class="btn" data-go="microbloques">Continuar</button>
            </div>
@@ -649,8 +649,8 @@
       <section class="section">
         <div class="card card--brand">
           <p class="muted" style="font-weight:600">${greetingByHour()},</p>
-          <h2 class="hello-name">${esc(state.user.name)} ðŸ‘‹</h2>
-          <p class="muted">${s.pending ? `Tienes <strong style="color:#fff">${s.pending}</strong> pendiente(s) en tu volcado mental y ` : "Empieza por soltar lo que traes en la cabeza. "}${s.totalToday ? `<strong style="color:#fff">${s.doneToday}/${s.totalToday}</strong> micro-bloques hechos hoy.` : "aÃºn no tienes micro-bloques cargados."}</p>
+          <h2 class="hello-name">${esc(state.user.name)} 👋</h2>
+          <p class="muted">${s.pending ? `Tienes <strong style="color:#fff">${s.pending}</strong> pendiente(s) en tu volcado mental y ` : "Empieza por soltar lo que traes en la cabeza. "}${s.totalToday ? `<strong style="color:#fff">${s.doneToday}/${s.totalToday}</strong> micro-bloques hechos hoy.` : "aún no tienes micro-bloques cargados."}</p>
           <div class="hstack wrap mt-16">
             <button class="btn" data-go="volcado">${icon("brain", 18)} Volcar pendientes</button>
             <button class="btn" data-go="microbloques">${icon("play", 18)} Empezar 5 min</button>
@@ -662,18 +662,18 @@
       <section class="section">
         <details class="guide" ${(s.actDone === 0 && state.brainDump.length === 0) ? "open" : ""}>
           <summary class="guide__summary">
-            <span>${icon("help", 18)} Â¿CÃ³mo funciona esta app?</span>
+            <span>${icon("help", 18)} ¿Cómo funciona esta app?</span>
             <span class="guide__chev">${icon("chevron", 16)}</span>
           </summary>
           <div class="guide__body">
-            <p>Cerebro Externo es tu <strong>memoria de apoyo</strong>. En vez de tener todo dando vueltas en la cabeza, lo escribÃ­s acÃ¡, lo partÃ­s en pasos chiquitos y avanzÃ¡s de a 5 minutos. Menos carga mental, sin agendas rÃ­gidas ni culpa.</p>
+            <p>Cerebro Externo es tu <strong>memoria de apoyo</strong>. En vez de tener todo dando vueltas en la cabeza, lo escribís acá, lo partís en pasos chiquitos y avanzás de a 5 minutos. Menos carga mental, sin agendas rígidas ni culpa.</p>
             <ol class="guide__steps">
-              <li data-go="volcado"><span>1</span><div><strong>VolcÃ¡ lo que tenÃ©s en la cabeza</strong><small>Pendientes, ideas, preocupaciones. Todo junto, sin ordenar.</small></div></li>
-              <li data-go="volcado"><span>2</span><div><strong>ConvertÃ­ lo importante en micro-bloques</strong><small>TocÃ¡ el botÃ³n de diana en un pendiente para volverlo una acciÃ³n de 5 min.</small></div></li>
-              <li data-go="plantillas"><span>3</span><div><strong>UsÃ¡ una plantilla si querÃ©s una estructura lista</strong><small>Un set de micro-bloques y alertas para una situaciÃ³n concreta.</small></div></li>
-              <li data-go="microbloques"><span>4</span><div><strong>AvanzÃ¡ en micro-bloques de 5 minutos</strong><small>PonÃ© el reloj, hacÃ© un paso, marcÃ¡ hecho.</small></div></li>
-              <li data-go="progreso"><span>5</span><div><strong>MirÃ¡ tu progreso</strong><small>Micro-bloques del dÃ­a, racha y constancia de la semana.</small></div></li>
-              <li data-go="alertas"><span>6</span><div><strong>ActivÃ¡ alertas si tu dispositivo las admite</strong><small>Recordatorios de agua, orden, medicinas y tiempo para vos.</small></div></li>
+              <li data-go="volcado"><span>1</span><div><strong>Volcá lo que tenés en la cabeza</strong><small>Pendientes, ideas, preocupaciones. Todo junto, sin ordenar.</small></div></li>
+              <li data-go="volcado"><span>2</span><div><strong>Convertí lo importante en micro-bloques</strong><small>Tocá el botón de diana en un pendiente para volverlo una acción de 5 min.</small></div></li>
+              <li data-go="plantillas"><span>3</span><div><strong>Usá una plantilla si querés una estructura lista</strong><small>Un set de micro-bloques y alertas para una situación concreta.</small></div></li>
+              <li data-go="microbloques"><span>4</span><div><strong>Avanzá en micro-bloques de 5 minutos</strong><small>Poné el reloj, hacé un paso, marcá hecho.</small></div></li>
+              <li data-go="progreso"><span>5</span><div><strong>Mirá tu progreso</strong><small>Micro-bloques del día, racha y constancia de la semana.</small></div></li>
+              <li data-go="alertas"><span>6</span><div><strong>Activá alertas si tu dispositivo las admite</strong><small>Recordatorios de agua, orden, medicinas y tiempo para vos.</small></div></li>
             </ol>
           </div>
         </details>
@@ -682,14 +682,14 @@
       <section class="section">
         <div class="grid grid--3">
           ${statTile("target", s.doneToday + "/" + s.totalToday, "Micro-bloques hoy")}
-          ${statTile("zap", s.streak, s.streak === 1 ? "dÃ­a de racha" : "dÃ­as de racha")}
+          ${statTile("zap", s.streak, s.streak === 1 ? "día de racha" : "días de racha")}
           ${statTile("bell", s.activeAlerts, "alertas activas")}
         </div>
       </section>
 
       <section class="section">
         <div class="section__head">
-          <div><h2>Tus primeros pasos</h2><p>${s.actDone}/3 completados Â· tocÃ¡ cada uno para ir</p></div>
+          <div><h2>Tus primeros pasos</h2><p>${s.actDone}/3 completados · tocá cada uno para ir</p></div>
         </div>
         <div class="card">
           <div class="steps">
@@ -704,7 +704,7 @@
       </section>
 
       <section class="section">
-        <div class="section__head"><div><h2>Resumen de hoy</h2><p>CÃ³pialo o compÃ¡rtelo</p></div></div>
+        <div class="section__head"><div><h2>Resumen de hoy</h2><p>Cópialo o compártelo</p></div></div>
         <div class="card">
           <div class="donut">
             ${donutSVG(s.pct)}
@@ -730,7 +730,7 @@
     </div>`;
   }
 
-  // Tarjeta breve que explica de quÃ© se trata la secciÃ³n (para usuarias nuevas)
+  // Tarjeta breve que explica de qué se trata la sección (para usuarias nuevas)
   function intro(html) {
     return `<section class="section"><div class="card card--pad-sm intro-card">${html}</div></section>`;
   }
@@ -746,16 +746,16 @@
       <section class="section">
         <div class="card card--brand">
           <div class="card__title" style="color:#fff">Volcado mental</div>
-          <p class="muted">Son esas cosas que tenÃ©s dando vueltas en la cabeza y todavÃ­a no ordenaste: pendientes, ideas, preocupaciones. Escribilas acÃ¡ para sacarlas de tu mente. DespuÃ©s, con el botÃ³n de diana, convertÃ­s las importantes en micro-bloques de 5 minutos.</p>
+          <p class="muted">Son esas cosas que tenés dando vueltas en la cabeza y todavía no ordenaste: pendientes, ideas, preocupaciones. Escribilas acá para sacarlas de tu mente. Después, con el botón de diana, convertís las importantes en micro-bloques de 5 minutos.</p>
         </div>
       </section>
 
       <section class="section">
         <form id="dumpForm" class="dumpbar">
-          <input class="input" id="dumpInput" placeholder="Ej. Comprar leche, cita del pediatra, enviar informeâ€¦" maxlength="140" autocomplete="off" />
-          <button class="btn btn--cta" type="submit">${icon("plus", 18)} AÃ±adir</button>
+          <input class="input" id="dumpInput" placeholder="Ej. Comprar leche, cita del pediatra, enviar informe…" maxlength="140" autocomplete="off" />
+          <button class="btn btn--cta" type="submit">${icon("plus", 18)} Añadir</button>
         </form>
-        <p class="field__help">Consejo: una idea por lÃ­nea. No filtres nada, todo entra.</p>
+        <p class="field__help">Consejo: una idea por línea. No filtres nada, todo entra.</p>
 
         ${items.length ? `
           <div class="list" id="dumpList">
@@ -772,17 +772,17 @@
             <button class="btn btn--ghost btn--sm" id="clearDoneDump">Quitar resueltos</button>
           </div>
         ` : `
-          <div class="empty">${icon("brain", 34)}<p>Tu mente estÃ¡ en blanco aquÃ­â€¦ todavÃ­a.<br>Escribe el primer pendiente arriba.</p></div>
+          <div class="empty">${icon("brain", 34)}<p>Tu mente está en blanco aquí… todavía.<br>Escribe el primer pendiente arriba.</p></div>
         `}
       </section>`;
   }
 
   function viewPlantillas(s) {
     return `
-      ${intro(`<p>Una <strong>plantilla</strong> es un set listo de micro-bloques y alertas pensado para una situaciÃ³n concreta: bebÃ© en casa, home office o varios hijos. ElegÃ­ la que se parece a tu dÃ­a y se carga sola. Conviene usarla cuando no sabÃ©s por dÃ³nde empezar. DespuÃ©s, solo completÃ¡s los micro-bloques que aparecen.</p>`)}
+      ${intro(`<p>Una <strong>plantilla</strong> es un set listo de micro-bloques y alertas pensado para una situación concreta: bebé en casa, trabajo desde casa o varios hijos. Elegí la que se parece a tu día y se carga sola. Conviene usarla cuando no sabés por dónde empezar. Después, solo completás los micro-bloques que aparecen.</p>`)}
 
       <section class="section">
-        <div class="section__head"><div><h2>ElegÃ­ tu plantilla</h2><p>Se importa en 1 toque. PodÃ©s cambiarla cuando quieras.</p></div></div>
+        <div class="section__head"><div><h2>Elegí tu plantilla</h2><p>Se importa en 1 toque. Podés cambiarla cuando quieras.</p></div></div>
         <div class="grid grid--3">
           ${Object.entries(TEMPLATES).map(([id, t]) => `
             <div class="card card--hover tpl-card ${state.template === id ? "is-selected" : ""}" data-tpl="${id}" role="button" tabindex="0">
@@ -790,7 +790,7 @@
               <div class="tpl-card__emoji">${t.emoji}</div>
               <div class="card__title mt-8">${t.name}</div>
               <p class="card__lead">${t.desc}</p>
-              <div class="mt-16 faint" style="font-size:.82rem">${t.blocks.length} micro-bloques Â· ${Object.keys(t.alerts).length} alertas sugeridas</div>
+              <div class="mt-16 faint" style="font-size:.82rem">${t.blocks.length} micro-bloques · ${Object.keys(t.alerts).length} alertas sugeridas</div>
             </div>`).join("")}
         </div>
       </section>
@@ -818,7 +818,7 @@
           <div class="spread wrap">
             <div>
               <div class="card__title">Notificaciones del sistema: activadas</div>
-              <p class="muted">Vas a recibir un aviso de tu telÃ©fono cuando toque una tarea invisible, aunque tengas la app en segundo plano.</p>
+              <p class="muted">Vas a recibir un aviso de tu teléfono cuando toque una tarea invisible, aunque tengas la app en segundo plano.</p>
             </div>
             <span class="chip chip--cta">${icon("check", 15)} Activadas</span>
           </div>
@@ -827,8 +827,8 @@
         <div class="card card--brand">
           <div class="spread wrap">
             <div>
-              <div class="card__title" style="color:#fff">ActivÃ¡ las notificaciones del sistema</div>
-              <p class="muted">Con el permiso del navegador recibÃ­s un aviso de tu telÃ©fono en el momento de cada tarea invisible. PodÃ©s desactivarlas cuando quieras.</p>
+              <div class="card__title" style="color:#fff">Activá las notificaciones del sistema</div>
+              <p class="muted">Con el permiso del navegador recibís un aviso de tu teléfono en el momento de cada tarea invisible. Podés desactivarlas cuando quieras.</p>
             </div>
             <button class="btn" id="permBtn">Permitir</button>
           </div>
@@ -836,7 +836,7 @@
       : ns === "denied" ? `
         <div class="card">
           <div class="card__title">Notificaciones del sistema: bloqueadas</div>
-          <p class="muted">Las bloqueaste antes. Para activarlas, entrÃ¡ a los ajustes de este sitio en tu navegador y permitÃ­ las notificaciones. Las alertas dentro de la app siguen funcionando igual.</p>
+          <p class="muted">Las bloqueaste antes. Para activarlas, entrá a los ajustes de este sitio en tu navegador y permití las notificaciones. Las alertas dentro de la app siguen funcionando igual.</p>
         </div>`
       : `
         <div class="card">
@@ -848,13 +848,13 @@
       <section class="section">
         ${sysCard}
         <div class="card card--pad-sm intro-card mt-16">
-          <p><strong>Alerta en la app:</strong> aviso visual mientras estÃ¡s usando Cerebro Externo. Siempre funciona.</p>
-          <p><strong>NotificaciÃ³n del sistema:</strong> aviso de tu telÃ©fono aunque la app estÃ© en segundo plano. Solo si tu dispositivo lo permite.</p>
+          <p><strong>Alerta en la app:</strong> aviso visual mientras estás usando Cerebro Externo. Siempre funciona.</p>
+          <p><strong>Notificación del sistema:</strong> aviso de tu teléfono aunque la app esté en segundo plano. Solo si tu dispositivo lo permite.</p>
         </div>
       </section>
 
       <section class="section">
-        <div class="section__head"><div><h2>Tus tareas invisibles</h2><p>Cosas que no â€œse venâ€ pero pesan. EncendÃ© las que quieras que la app te recuerde y ajustÃ¡ cada cuÃ¡nto.</p></div></div>
+        <div class="section__head"><div><h2>Tus tareas invisibles</h2><p>Cosas que no “se ven” pero pesan. Encendé las que quieras que la app te recuerde y ajustá cada cuánto.</p></div></div>
         <div class="vstack">
           ${state.alerts.map((a) => `
             <div class="alert-row" data-id="${a.id}">
@@ -863,9 +863,9 @@
                 <strong>${esc(a.label)}</strong>
                 <div class="alert-row__meta">
                   <span class="stepper" role="group" aria-label="Frecuencia de ${esc(a.label)}">
-                    <button data-act="dec" aria-label="Menos frecuencia">âˆ’</button>
+                    <button data-act="dec" aria-label="Menos frecuencia">−</button>
                     <span>${fmtEvery(a.every)}</span>
-                    <button data-act="inc" aria-label="MÃ¡s frecuencia">+</button>
+                    <button data-act="inc" aria-label="Más frecuencia">+</button>
                   </span>
                   <button class="linkbtn" data-act="test">Probar ahora</button>
                 </div>
@@ -878,7 +878,7 @@
         </div>
         <div class="hstack wrap mt-16">
           <span class="chip chip--brand">${s.activeAlerts} activas</span>
-          <button class="btn btn--ghost btn--sm" id="addAlert">${icon("plus", 16)} AÃ±adir alerta</button>
+          <button class="btn btn--ghost btn--sm" id="addAlert">${icon("plus", 16)} Añadir alerta</button>
         </div>
       </section>`;
   }
@@ -926,21 +926,21 @@
             <button class="iconbtn item__del" data-act="del" title="Eliminar">${icon("trash", 18)}</button>
           </div>`).join("")}
       </div>` : `
-      <div class="empty">${icon("timer", 34)}<p>No tienes micro-bloques.<br>Importa una plantilla o aÃ±ade uno abajo.</p>
+      <div class="empty">${icon("timer", 34)}<p>No tienes micro-bloques.<br>Importa una plantilla o añade uno abajo.</p>
         <button class="btn btn--ghost btn--sm mt-16" data-go="plantillas">Ir a plantillas</button></div>`;
 
     return `
       ${timerPanel}
-      ${intro(`<p>Un <strong>micro-bloque</strong> es una acciÃ³n chica de 5 minutos: el primer paso de algo, no la tarea entera. <strong>â€œDe hoyâ€</strong> es tu lista para el dÃ­a. TocÃ¡ <strong>â€œ5 minâ€</strong> para arrancar el reloj; al terminar se marca como hecho y suma a tu progreso. PodÃ©s aÃ±adir los tuyos, traerlos del Volcado mental o de una Plantilla.</p>`)}
+      ${intro(`<p>Un <strong>micro-bloque</strong> es una acción chica de 5 minutos: el primer paso de algo, no la tarea entera. <strong>“De hoy”</strong> es tu lista para el día. Tocá <strong>“5 min”</strong> para arrancar el reloj; al terminar se marca como hecho y suma a tu progreso. Podés añadir los tuyos, traerlos del Volcado mental o de una Plantilla.</p>`)}
       <section class="section">
         <div class="section__head"><div><h2>Tus micro-bloques de hoy</h2><p>${s.doneToday}/${s.totalToday} completados</p></div></div>
         <form id="blockForm" class="dumpbar">
-          <input class="input" id="blockInput" placeholder="AÃ±adir micro-bloque (5 min)â€¦" maxlength="120" autocomplete="off" />
-          <button class="btn btn--cta" type="submit">${icon("plus", 18)} AÃ±adir</button>
+          <input class="input" id="blockInput" placeholder="Añadir micro-bloque (5 min)…" maxlength="120" autocomplete="off" />
+          <button class="btn btn--cta" type="submit">${icon("plus", 18)} Añadir</button>
         </form>
         ${list}
         ${state.blocks.length ? `<div class="hstack wrap mt-16">
-          <button class="btn btn--ghost btn--sm" id="resetBlocks">${icon("refresh", 16)} Reiniciar el dÃ­a</button>
+          <button class="btn btn--ghost btn--sm" id="resetBlocks">${icon("refresh", 16)} Reiniciar el día</button>
         </div>` : ""}
       </section>`;
   }
@@ -961,24 +961,24 @@
     const activeDays = Object.values(state.history).filter((v) => v > 0).length;
 
     return `
-      ${intro(`<p>AcÃ¡ ves tu constancia real: micro-bloques completados hoy, tu <strong>racha</strong> de dÃ­as seguidos y cuÃ¡ntos hiciste en la semana. Sirve para ver el avance, sin exigencias ni comparaciones.</p>`)}
+      ${intro(`<p>Acá ves tu constancia real: micro-bloques completados hoy, tu <strong>racha</strong> de días seguidos y cuántos hiciste en la semana. Sirve para ver el avance, sin exigencias ni comparaciones.</p>`)}
       <section class="section">
         <div class="grid grid--3">
-          ${statTile("zap", s.streak, s.streak === 1 ? "dÃ­a seguido" : "dÃ­as seguidos")}
+          ${statTile("zap", s.streak, s.streak === 1 ? "día seguido" : "días seguidos")}
           ${statTile("check", totalAll, "micro-bloques totales")}
-          ${statTile("clock", activeDays, activeDays === 1 ? "dÃ­a activo" : "dÃ­as activos")}
+          ${statTile("clock", activeDays, activeDays === 1 ? "día activo" : "días activos")}
         </div>
       </section>
 
       <section class="section">
-        <div class="section__head"><div><h2>Ãšltimos 7 dÃ­as</h2><p>${s.weekTotal} micro-bloques esta semana</p></div></div>
+        <div class="section__head"><div><h2>Últimos 7 días</h2><p>${s.weekTotal} micro-bloques esta semana</p></div></div>
         <div class="card">
           <div class="bars">${bars}</div>
         </div>
       </section>
 
       <section class="section">
-        <div class="section__head"><div><h2>Hoy</h2><p>Constancia del dÃ­a</p></div></div>
+        <div class="section__head"><div><h2>Hoy</h2><p>Constancia del día</p></div></div>
         <div class="card">
           <div class="donut">
             ${donutSVG(s.pct)}
@@ -997,37 +997,37 @@
 
   const EBOOK = [
     {
-      h: "1 Â· El problema no es tu memoria",
-      html: `<p>La carga mental no es falta de disciplina. Es tener demasiadas tareas abiertas al mismo tiempo dentro de la cabeza: medicinas, ropa, comida, trabajo, colegio, tu propio proyecto. Cada una consume atenciÃ³n aunque no la estÃ©s haciendo.</p>
-      <p>La soluciÃ³n no es recordar mejor. Es <strong>dejar de recordar</strong> y delegar ese trabajo a un sistema externo de confianza.</p>
-      <blockquote>No necesitas mÃ¡s fuerza de voluntad. Necesitas un lugar fuera de tu mente donde vivan tus pendientes.</blockquote>`,
+      h: "1 · El problema no es tu memoria",
+      html: `<p>La carga mental no es falta de disciplina. Es tener demasiadas tareas abiertas al mismo tiempo dentro de la cabeza: medicinas, ropa, comida, trabajo, colegio, tu propio proyecto. Cada una consume atención aunque no la estés haciendo.</p>
+      <p>La solución no es recordar mejor. Es <strong>dejar de recordar</strong> y delegar ese trabajo a un sistema externo de confianza.</p>
+      <blockquote>No necesitas más fuerza de voluntad. Necesitas un lugar fuera de tu mente donde vivan tus pendientes.</blockquote>`,
     },
     {
-      h: "2 Â· Volcado mental primero",
-      html: `<p>Antes de organizar nada, vacÃ­a la cabeza. Abre el <strong>Volcado mental</strong> y escribe todo lo que tienes pendiente, sin orden ni categorÃ­as. El objetivo no es una lista bonita: es el alivio de verlo fuera.</p>
-      <ul><li>Escribe rÃ¡pido, una idea por lÃ­nea.</li><li>No filtres â€œlo importanteâ€. Todo entra.</li><li>Hazlo otra vez cada noche: 2 minutos bastan.</li></ul>`,
+      h: "2 · Volcado mental primero",
+      html: `<p>Antes de organizar nada, vacía la cabeza. Abre el <strong>Volcado mental</strong> y escribe todo lo que tienes pendiente, sin orden ni categorías. El objetivo no es una lista bonita: es el alivio de verlo fuera.</p>
+      <ul><li>Escribe rápido, una idea por línea.</li><li>No filtres “lo importante”. Todo entra.</li><li>Hazlo otra vez cada noche: 2 minutos bastan.</li></ul>`,
     },
     {
-      h: "3 Â· Micro-bloques de 5 minutos",
-      html: `<p>Las agendas por horas se rompen con una sola interrupciÃ³n. Los micro-bloques no: son unidades de <strong>5 minutos</strong> que puedes hacer entre una toma y otra, mientras hierve el agua o antes de una reuniÃ³n.</p>
-      <ul><li>Divide cualquier tarea grande en su primer paso de 5 minutos.</li><li>â€œAvanzarâ€ cuenta. No necesitas terminar.</li><li>Usa el temporizador: al empezar, tu mente deja de negociar.</li></ul>`,
+      h: "3 · Micro-bloques de 5 minutos",
+      html: `<p>Las agendas por horas se rompen con una sola interrupción. Los micro-bloques no: son unidades de <strong>5 minutos</strong> que puedes hacer entre una toma y otra, mientras hierve el agua o antes de una reunión.</p>
+      <ul><li>Divide cualquier tarea grande en su primer paso de 5 minutos.</li><li>“Avanzar” cuenta. No necesitas terminar.</li><li>Usa el temporizador: al empezar, tu mente deja de negociar.</li></ul>`,
     },
     {
-      h: "4 Â· Tareas invisibles en piloto automÃ¡tico",
-      html: `<p>Beber agua, tomar la medicina, ordenar 5 minutos, dedicarte tiempo: son tareas que no â€œse venâ€ pero pesan. En vez de recordarlas, ponlas en <strong>Alertas</strong> y deja que la app te avise.</p>
+      h: "4 · Tareas invisibles en piloto automático",
+      html: `<p>Beber agua, tomar la medicina, ordenar 5 minutos, dedicarte tiempo: son tareas que no “se ven” pero pesan. En vez de recordarlas, ponlas en <strong>Alertas</strong> y deja que la app te avise.</p>
       <p>Empieza con 2 o 3 alertas. Si son demasiadas, se vuelven ruido y las ignoras.</p>`,
     },
     {
-      h: "5 Â· Reinicio sin culpa",
-      html: `<p>Tu bebÃ© se despierta, entra una llamada, cambia el plan. No pasa nada. El sistema estÃ¡ hecho para eso.</p>
-      <ul><li>Respira 3 veces.</li><li>Abre Micro-bloques y elige <strong>uno solo</strong>.</li><li>Pon 5 minutos y empieza. El resto del dÃ­a se reacomoda solo.</li></ul>
-      <blockquote>La meta no es un dÃ­a perfecto. Es acostarte con la mente en calma.</blockquote>`,
+      h: "5 · Reinicio sin culpa",
+      html: `<p>Tu bebé se despierta, entra una llamada, cambia el plan. No pasa nada. El sistema está hecho para eso.</p>
+      <ul><li>Respira 3 veces.</li><li>Abre Micro-bloques y elige <strong>uno solo</strong>.</li><li>Pon 5 minutos y empieza. El resto del día se reacomoda solo.</li></ul>
+      <blockquote>La meta no es un día perfecto. Es acostarte con la mente en calma.</blockquote>`,
     },
   ];
   let ebookIdx = 0;
   function viewFundamento() {
     return `
-      ${intro(`<p>El <strong>mÃ©todo completo</strong> detrÃ¡s de la app, en 5 capÃ­tulos cortos (15 min de lectura). Leelo cuando quieras entender el porquÃ© de cada herramienta. No hace falta para empezar a usar Cerebro Externo.</p>`)}
+      ${intro(`<p>El <strong>método completo</strong> detrás de la app, en 5 capítulos cortos (15 min de lectura). Leelo cuando quieras entender el porqué de cada herramienta. No hace falta para empezar a usar Cerebro Externo.</p>`)}
       <section class="section">
         <div class="ebook-grid" id="ebookGrid">
           <div class="card card--pad-sm">
@@ -1052,12 +1052,12 @@
     const themeVal = state.theme || "system";
     return `
       <section class="section">
-        <div class="section__head"><div><h2>Apariencia</h2><p>Elige cÃ³mo se ve la app</p></div></div>
+        <div class="section__head"><div><h2>Apariencia</h2><p>Elige cómo se ve la app</p></div></div>
         <div class="card">
           <div class="spread wrap">
             <div><strong>Tema</strong><p class="muted" style="font-size:.88rem">El modo oscuro cuida tu vista de noche.</p></div>
             <div class="hstack">
-              ${["system", "light", "dark"].map((v) => `<button class="btn btn--sm ${themeVal === v ? "btn--brand" : "btn--ghost"}" data-theme-set="${v}">${{ system: "AutomÃ¡tico", light: "Claro", dark: "Oscuro" }[v]}</button>`).join("")}
+              ${["system", "light", "dark"].map((v) => `<button class="btn btn--sm ${themeVal === v ? "btn--brand" : "btn--ghost"}" data-theme-set="${v}">${{ system: "Automático", light: "Claro", dark: "Oscuro" }[v]}</button>`).join("")}
             </div>
           </div>
         </div>
@@ -1085,8 +1085,8 @@
         <div class="section__head"><div><h2>Zona de reinicio</h2><p>Con cuidado</p></div></div>
         <div class="card vstack">
           <div class="spread wrap">
-            <div><strong>Reiniciar el dÃ­a</strong><p class="muted" style="font-size:.88rem">Marca todos los micro-bloques como no hechos (conserva tu historial).</p></div>
-            <button class="btn btn--ghost btn--sm" id="resetDayBtn">${icon("refresh", 16)} Reiniciar dÃ­a</button>
+            <div><strong>Reiniciar el día</strong><p class="muted" style="font-size:.88rem">Marca todos los micro-bloques como no hechos (conserva tu historial).</p></div>
+            <button class="btn btn--ghost btn--sm" id="resetDayBtn">${icon("refresh", 16)} Reiniciar día</button>
           </div>
           <div class="spread wrap">
             <div><strong>Borrar todos mis datos</strong><p class="muted" style="font-size:.88rem">Elimina nombre, plantillas, historial y ajustes de este dispositivo.</p></div>
@@ -1095,7 +1095,7 @@
         </div>
       </section>
 
-      <p class="faint" style="text-align:center;font-size:.8rem">Cerebro Externo Â· MicroApp 100% local Â· v1</p>`;
+      <p class="faint" style="text-align:center;font-size:.8rem">Cerebro Externo · MicroApp 100% local · v1</p>`;
   }
 
   /* ---------- Perfil ---------- */
@@ -1125,7 +1125,7 @@
       </section>
 
       <section class="section">
-        <div class="section__head"><div><h2>Tus datos</h2><p>Se guardan automÃ¡ticamente al escribir</p></div></div>
+        <div class="section__head"><div><h2>Tus datos</h2><p>Se guardan automáticamente al escribir</p></div></div>
         <div class="card">
           <div class="pf-fields">
             <div class="field pf-field">
@@ -1135,22 +1135,22 @@
             </div>
 
             <div class="field pf-field">
-              <label class="field__label">Â¿De dÃ³nde sos?</label>
+              <label class="field__label">¿De dónde sos?</label>
               <div class="pf-grid">
-                <input class="input" id="pfCountry" value="${esc(p.location.country)}" maxlength="56" autocomplete="country-name" placeholder="PaÃ­s" />
+                <input class="input" id="pfCountry" value="${esc(p.location.country)}" maxlength="56" autocomplete="country-name" placeholder="País" />
                 <input class="input" id="pfCity" value="${esc(p.location.city)}" maxlength="80" autocomplete="address-level2" placeholder="Ciudad / localidad" />
               </div>
             </div>
 
             <div class="field pf-field">
-              <label class="field__label" for="pfJob">Â¿A quÃ© te dedicÃ¡s?</label>
-              <input class="input" id="pfJob" list="pfJobList" value="${esc(p.occupation)}" maxlength="60" placeholder="ProfesiÃ³n, trabajo, actividad o negocio" />
+              <label class="field__label" for="pfJob">¿A qué te dedicás?</label>
+              <input class="input" id="pfJob" list="pfJobList" value="${esc(p.occupation)}" maxlength="60" placeholder="Profesión, trabajo, actividad o negocio" />
               <datalist id="pfJobList">
                 <option value="Emprendedora"></option>
                 <option value="Docente"></option>
                 <option value="Abogada"></option>
                 <option value="Comerciante"></option>
-                <option value="DiseÃ±adora"></option>
+                <option value="Diseñadora"></option>
                 <option value="Profesional independiente"></option>
               </datalist>
             </div>
@@ -1159,17 +1159,17 @@
       </section>
 
       <section class="section">
-        <div class="section__head"><div><h2>Â¿TenÃ©s hijos?</h2></div></div>
+        <div class="section__head"><div><h2>¿Tenés hijos?</h2></div></div>
         <div class="card">
           <div class="pf-fields">
             <div class="hstack">
-              <button class="btn btn--sm ${p.hasKids === true ? "btn--brand" : "btn--ghost"}" data-kids="yes">SÃ­</button>
+              <button class="btn btn--sm ${p.hasKids === true ? "btn--brand" : "btn--ghost"}" data-kids="yes">Sí</button>
               <button class="btn btn--sm ${p.hasKids === false ? "btn--brand" : "btn--ghost"}" data-kids="no">No</button>
             </div>
 
             ${p.hasKids === true ? `
               <div class="field pf-field">
-                <label class="field__label" for="pfKidsCount">Â¿CuÃ¡ntos hijos tenÃ©s?</label>
+                <label class="field__label" for="pfKidsCount">¿Cuántos hijos tenés?</label>
                 <select class="select" id="pfKidsCount">
                   ${Array.from({ length: 12 }, (_, i) => i + 1).map((n) => `<option value="${n}" ${Math.max(1, p.kidsCount) === n ? "selected" : ""}>${n}</option>`).join("")}
                 </select>
@@ -1187,7 +1187,7 @@
       </section>`;
   }
 
-  // Redimensiona una imagen a un cuadrado mÃ¡ximo y devuelve un dataURL JPEG liviano
+  // Redimensiona una imagen a un cuadrado máximo y devuelve un dataURL JPEG liviano
   function resizeImage(file, max, ok, fail) {
     const reader = new FileReader();
     reader.onload = () => {
@@ -1238,7 +1238,7 @@
     bindText("#pfCity", (v) => (state.profile.location.city = v));
     bindText("#pfJob", (v) => (state.profile.occupation = v));
 
-    // Â¿TenÃ©s hijos?
+    // ¿Tenés hijos?
     $$('[data-kids]').forEach((b) => b.onclick = () => {
       const yes = b.dataset.kids === "yes";
       set((s) => {
@@ -1272,21 +1272,21 @@
     if (pf) pf.onchange = () => {
       const file = pf.files && pf.files[0];
       if (!file) return;
-      if (!/^image\//.test(file.type)) { toast("ElegÃ­ un archivo de imagen.", "warn"); pf.value = ""; return; }
+      if (!/^image\//.test(file.type)) { toast("Elegí un archivo de imagen.", "warn"); pf.value = ""; return; }
       resizeImage(file, 480,
-        (dataUrl) => { set((s) => { s.profile.photo = dataUrl; }); toast("Foto de perfil actualizada âœ“", "ok"); },
+        (dataUrl) => { set((s) => { s.profile.photo = dataUrl; }); toast("Foto de perfil actualizada ✓", "ok"); },
         () => toast("No se pudo procesar la imagen.", "warn"));
     };
     const pd = $("#pfPhotoDel");
     if (pd) pd.onclick = () => modal({
       title: "Eliminar foto de perfil",
-      body: "VolverÃ¡s a ver el avatar neutro. Puedes subir otra cuando quieras.",
+      body: "Volverás a ver el avatar neutro. Puedes subir otra cuando quieras.",
       confirmText: "Eliminar", danger: true,
       onConfirm: () => { set((s) => { s.profile.photo = null; }); toast("Foto eliminada.", "info"); },
     });
   }
 
-  /* ---------- GrÃ¡fico donut (SVG) ---------- */
+  /* ---------- Gráfico donut (SVG) ---------- */
   function donutSVG(pct) {
     const r = 52, C = 2 * Math.PI * r;
     const off = C * (1 - clamp(pct, 0, 100) / 100);
@@ -1304,7 +1304,7 @@
      15. WIRING de cada vista (eventos)
      ============================================================ */
   function wireView(route) {
-    // NavegaciÃ³n por data-go (global dentro de la vista)
+    // Navegación por data-go (global dentro de la vista)
     $$("[data-go]", $("#view")).forEach((el) => el.addEventListener("click", () => go(el.dataset.go)));
     const copyBtn = $("#copyBtn"); if (copyBtn) copyBtn.onclick = copySummary;
     const shareBtn = $("#shareBtn"); if (shareBtn) shareBtn.onclick = shareSummary;
@@ -1326,7 +1326,7 @@
       const v = inp.value.trim();
       if (!v) { inp.classList.add("is-invalid"); inp.focus(); return; }
       set((s) => s.brainDump.unshift({ id: uid(), text: v, done: false, ts: Date.now() }));
-      toast("Pendiente fuera de tu cabeza âœ“", "ok");
+      toast("Pendiente fuera de tu cabeza ✓", "ok");
     };
     $("#dumpInput") && $("#dumpInput").addEventListener("input", (e) => e.target.classList.remove("is-invalid"));
 
@@ -1357,8 +1357,8 @@
         const id = card.dataset.tpl;
         if (state.template === id) return;
         modal({
-          title: `Importar â€œ${TEMPLATES[id].name}â€`,
-          body: `Se cargarÃ¡n <strong>${TEMPLATES[id].blocks.length} micro-bloques</strong> y se ajustarÃ¡n tus alertas. Reemplaza los micro-bloques actuales.`,
+          title: `Importar “${TEMPLATES[id].name}”`,
+          body: `Se cargarán <strong>${TEMPLATES[id].blocks.length} micro-bloques</strong> y se ajustarán tus alertas. Reemplaza los micro-bloques actuales.`,
           confirmText: "Importar",
           onConfirm: () => applyTemplate(id),
         });
@@ -1380,7 +1380,7 @@
           al.last = Date.now();
           s.activation.alerts = s.alerts.some((x) => x.on);
         });
-        toast(e.target.checked ? `â€œ${a.label}â€ activada` : `â€œ${a.label}â€ en pausa`, "info");
+        toast(e.target.checked ? `“${a.label}” activada` : `“${a.label}” en pausa`, "info");
       };
       row.querySelector('[data-act="inc"]').onclick = () => set((s) => {
         const al = s.alerts.find((x) => x.id === id); al.every = clamp(al.every + 30, 15, 720);
@@ -1414,7 +1414,7 @@
       const inp = $("#blockInput");
       if (!addBlock(inp.value)) { inp.classList.add("is-invalid"); inp.focus(); return; }
       inp.value = "";
-      toast("Micro-bloque aÃ±adido", "ok");
+      toast("Micro-bloque añadido", "ok");
     };
     $$("#blockList .item").forEach((row) => {
       const id = row.dataset.id;
@@ -1428,19 +1428,19 @@
     });
     const tt = $("#timerToggle"); if (tt) tt.onclick = toggleTimer;
     const tr = $("#timerReset"); if (tr) tr.onclick = () => {
-      modal({ title: "Cancelar micro-bloque", body: "El tiempo de este bloque no se guardarÃ¡.", confirmText: "Cancelar bloque", danger: true, onConfirm: resetTimer });
+      modal({ title: "Cancelar micro-bloque", body: "El tiempo de este bloque no se guardará.", confirmText: "Cancelar bloque", danger: true, onConfirm: resetTimer });
     };
     const td = $("#timerDone"); if (td) td.onclick = () => {
       const id = state.timer && state.timer.blockId;
       resetTimer();
-      if (id) { completeBlock(id, true); render(); toast("Â¡Completado! ðŸŽ‰", "ok"); confetti(); }
+      if (id) { completeBlock(id, true); render(); toast("¡Completado! 🎉", "ok"); confetti(); }
     };
     const rb = $("#resetBlocks");
     if (rb) rb.onclick = () => modal({
-      title: "Reiniciar el dÃ­a",
-      body: "Todos los micro-bloques volverÃ¡n a estado â€œpor hacerâ€. Tu historial y tu racha se conservan.",
+      title: "Reiniciar el día",
+      body: "Todos los micro-bloques volverán a estado “por hacer”. Tu historial y tu racha se conservan.",
       confirmText: "Reiniciar",
-      onConfirm: () => { set((s) => s.blocks.forEach((b) => (b.done = false))); toast("DÃ­a reiniciado", "ok"); },
+      onConfirm: () => { set((s) => s.blocks.forEach((b) => (b.done = false))); toast("Día reiniciado", "ok"); },
     });
   }
 
@@ -1468,15 +1468,15 @@
     };
     const rd = $("#resetDayBtn");
     if (rd) rd.onclick = () => modal({
-      title: "Reiniciar el dÃ­a",
-      body: "Los micro-bloques volverÃ¡n a â€œpor hacerâ€. El historial se conserva.",
-      confirmText: "Reiniciar", onConfirm: () => { set((s) => s.blocks.forEach((b) => (b.done = false))); toast("DÃ­a reiniciado", "ok"); },
+      title: "Reiniciar el día",
+      body: "Los micro-bloques volverán a “por hacer”. El historial se conserva.",
+      confirmText: "Reiniciar", onConfirm: () => { set((s) => s.blocks.forEach((b) => (b.done = false))); toast("Día reiniciado", "ok"); },
     });
     const wipe = $("#wipeBtn");
     if (wipe) wipe.onclick = () => modal({
       title: "Borrar todos mis datos",
-      body: "Esta acciÃ³n no se puede deshacer. Se eliminarÃ¡ tu nombre, plantillas, alertas, micro-bloques, historial y ajustes.",
-      confirmText: "SÃ­, borrar todo", danger: true,
+      body: "Esta acción no se puede deshacer. Se eliminará tu nombre, plantillas, alertas, micro-bloques, historial y ajustes.",
+      confirmText: "Sí, borrar todo", danger: true,
       onConfirm: () => {
         localStorage.removeItem(KEY);
         state = clone(DEFAULT_STATE);
@@ -1504,14 +1504,14 @@
   mqDark.addEventListener("change", () => { if (!state.theme) applyTheme(); });
 
   function quickThemeToggle() {
-    // Ciclo: system -> light -> dark -> system (pero si estÃ¡ en system, alterna al opuesto del actual)
+    // Ciclo: system -> light -> dark -> system (pero si está en system, alterna al opuesto del actual)
     const cur = resolvedTheme();
     set((s) => { s.theme = cur === "dark" ? "light" : "dark"; });
     applyTheme();
   }
 
   /* ============================================================
-     17. SIDEBAR (mÃ³vil)
+     17. SIDEBAR (móvil)
      ============================================================ */
   function openSidebar() {
     $("#sidebar").classList.add("is-open");
@@ -1533,7 +1533,7 @@
     pop.hidden = !open;
     $("#bellToggle").setAttribute("aria-expanded", String(open));
     if (open && state.notifications.some((n) => !n.read)) {
-      // marcar como leÃ­das al abrir (sin re-render completo)
+      // marcar como leídas al abrir (sin re-render completo)
       state.notifications.forEach((n) => (n.read = true));
       save();
       renderNotifList();
@@ -1558,12 +1558,12 @@
       e.preventDefault();
       const raw = input.value.trim().replace(/\s+/g, " ");
       if (raw.length < 2) return showErr("Escribe al menos 2 letras.");
-      if (raw.length > 30) return showErr("MÃ¡ximo 30 caracteres.");
-      if (!/^[\p{L}][\p{L}\s'â€™.-]*$/u.test(raw)) return showErr("Usa solo letras y espacios.");
+      if (raw.length > 30) return showErr("Máximo 30 caracteres.");
+      if (!/^[\p{L}][\p{L}\s'’.-]*$/u.test(raw)) return showErr("Usa solo letras y espacios.");
       const name = raw.replace(/\b\p{L}/gu, (c) => c.toUpperCase());
 
       set((s) => { s.user.name = name; s.user.since = Date.now(); });
-      pushNotif("Â¡Bienvenida, " + name + "!", "Empieza importando una plantilla en el Paso 1.", "heart");
+      pushNotif("¡Bienvenida, " + name + "!", "Empieza importando una plantilla en el Paso 1.", "heart");
 
       const ob = $("#onboarding");
       ob.classList.add("is-leaving");
@@ -1572,7 +1572,7 @@
         ob.classList.remove("is-leaving");
         ob.setAttribute("aria-hidden", "true");
         $("#app").hidden = false;
-        toast(`Bienvenida, ${name} ðŸ’œ`, "ok");
+        toast(`Bienvenida, ${name} 💜`, "ok");
         render();
         $("#view").focus();
       }, 420);

@@ -793,10 +793,33 @@ body {
   .bars { height: 148px; }
 }
 
+/* ---- Primera pantalla (nombre) en móvil: recuadro compacto ---- */
+@media (max-width: 600px) {
+  .onboarding { padding: 16px; }
+  .onboarding__card {
+    padding: 20px 18px;
+    border-radius: 20px;
+    box-shadow: 0 12px 32px -14px rgba(16, 24, 40, 0.20);
+  }
+  .onboarding__card .brandmark { width: 40px; height: 40px; border-radius: 12px; }
+  .onboarding__eyebrow { margin-top: 10px; font-size: .72rem; letter-spacing: .05em; }
+  .onboarding__title { font-size: clamp(1.2rem, 5.4vw, 1.55rem); line-height: 1.22; margin-top: 5px; }
+  .onboarding__subtitle { font-size: .88rem; line-height: 1.45; margin-top: 7px; }
+  .onboarding .field { margin-top: 15px; }
+  .onboarding .field__label { margin-bottom: 6px; font-size: .88rem; }
+  .onboarding .field__control { gap: 8px; }
+  .onboarding .field__help { margin-top: 7px; font-size: .78rem; line-height: 1.4; }
+  .onboarding .input { padding: 12px 14px; }
+  .onboarding .btn--lg { padding: 13px 20px; min-height: 46px; font-size: .95rem; }
+  .onboarding__perks { margin-top: 13px; gap: 5px 12px; font-size: .78rem; }
+}
+
 /* ---- Móvil chico ---- */
 @media (max-width: 380px) {
   .view { padding: 14px 12px 30px; }
-  .onboarding__title { font-size: 1.22rem; }
+  .onboarding__card { padding: 18px 15px; }
+  .onboarding__title { font-size: 1.14rem; }
+  .onboarding__subtitle { font-size: .85rem; }
   .hello-name { font-size: 1.22rem; }
   .stat__value { font-size: 1.35rem; }
   .ring { width: 160px; height: 160px; }
