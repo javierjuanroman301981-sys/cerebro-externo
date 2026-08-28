@@ -86,6 +86,8 @@
     target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
     camera: '<path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H8l1.4-2h5.2L16 6h2.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5Z"/><circle cx="12" cy="13" r="3.4"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2.1-2.4 3.8"/><path d="M12 17.5h.01"/>',
+    chevron: '<path d="m6 9 6 6 6-6"/>',
   };
   function icon(name, size = 20, sw = 2) {
     return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.check}</svg>`;
@@ -252,14 +254,34 @@
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     try { new Notification(title, { body, icon: undefined }); } catch (e) {}
   }
+  // Estado real de las notificaciones del sistema en este dispositivo/navegador.
+  // 'unsupported' | 'default' | 'granted' | 'denied'
+  function notifState() {
+    try {
+      if (!("Notification" in window)) return "unsupported";
+      if (typeof Notification.requestPermission !== "function") return "unsupported";
+      return Notification.permission || "default";
+    } catch (e) {
+      return "unsupported";
+    }
+  }
   async function requestBrowserNotify() {
-    if (!("Notification" in window)) {
-      toast("Este navegador no admite notificaciones del sistema.", "warn");
+    const st = notifState();
+    if (st === "unsupported") {
+      toast("Este dispositivo o navegador no admite notificaciones del sistema.", "warn");
       return;
     }
-    const perm = await Notification.requestPermission();
-    set((s) => { s.browserNotify = perm === "granted"; });
-    toast(perm === "granted" ? "Notificaciones del navegador activadas" : "Permiso no concedido", perm === "granted" ? "ok" : "warn");
+    if (st === "denied") {
+      toast("Están bloqueadas. Actívalas desde los ajustes de este sitio en tu navegador.", "warn");
+      return;
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      set((s) => { s.browserNotify = perm === "granted"; });
+      toast(perm === "granted" ? "Notificaciones del sistema activadas" : "No se concedió el permiso", perm === "granted" ? "ok" : "warn");
+    } catch (e) {
+      toast("Este navegador no permitió pedir el permiso.", "warn");
+    }
   }
 
   /* ============================================================
@@ -502,15 +524,15 @@
      12. ROUTER (hash)
      ============================================================ */
   const ROUTES = {
-    inicio: { title: "Inicio", subtitle: "Tu resumen de hoy", icon: "home", render: viewInicio },
-    volcado: { title: "Volcado mental", subtitle: "Saca los pendientes de tu cabeza", icon: "brain", render: viewVolcado },
-    plantillas: { title: "Plantillas", subtitle: "Paso 1 · Importa tu estilo de vida", icon: "template", render: viewPlantillas },
-    alertas: { title: "Alertas", subtitle: "Paso 2 · Tus tareas invisibles", icon: "bell", render: viewAlertas },
-    microbloques: { title: "Micro-bloques", subtitle: "Paso 3 · Ejecuta en 5 minutos", icon: "timer", render: viewMicrobloques },
-    progreso: { title: "Progreso", subtitle: "Tu constancia, visible", icon: "chart", render: viewProgreso },
-    fundamento: { title: "Fundamento", subtitle: "El ebook en 15 minutos", icon: "book", render: viewFundamento },
-    ajustes: { title: "Ajustes", subtitle: "Personaliza y controla tus datos", icon: "settings", render: viewAjustes },
-    perfil: { title: "Perfil", subtitle: "Tu información personal", icon: "user", render: viewPerfil },
+    inicio: { title: "Inicio", subtitle: "Guía rápida y tu resumen de hoy", navHint: "Guía y resumen", icon: "home", render: viewInicio },
+    volcado: { title: "Volcado mental", subtitle: "Sacá de la cabeza lo que tenés pendiente", navHint: "Lo que tenés en la cabeza", icon: "brain", render: viewVolcado },
+    plantillas: { title: "Plantillas", subtitle: "Sets listos para ordenar una situación", navHint: "Estructuras listas para usar", icon: "template", render: viewPlantillas },
+    alertas: { title: "Alertas", subtitle: "Recordatorios de tus tareas invisibles", navHint: "Recordatorios automáticos", icon: "bell", render: viewAlertas },
+    microbloques: { title: "Micro-bloques", subtitle: "Acciones de 5 minutos para avanzar", navHint: "Avanzá de a 5 minutos", icon: "timer", render: viewMicrobloques },
+    progreso: { title: "Progreso", subtitle: "Tu constancia y tu racha", navHint: "Tu constancia", icon: "chart", render: viewProgreso },
+    fundamento: { title: "Fundamento", subtitle: "El método en 5 capítulos cortos", navHint: "El método, explicado", icon: "book", render: viewFundamento },
+    ajustes: { title: "Ajustes", subtitle: "Apariencia y control de tus datos", navHint: "Apariencia y datos", icon: "settings", render: viewAjustes },
+    perfil: { title: "Perfil", subtitle: "Tu información personal", navHint: "Tu información", icon: "user", render: viewPerfil },
   };
   // El menú lateral no cambia: "perfil" se abre desde la tarjeta de usuaria, no desde el menú.
   const NAV_ORDER = ["inicio", "volcado", "plantillas", "alertas", "microbloques", "progreso", "fundamento", "ajustes"];
@@ -549,7 +571,7 @@
       let badge = "";
       if (r === "volcado" && s.pending) badge = `<span class="nav__badge">${s.pending}</span>`;
       if (r === "microbloques" && s.totalToday) badge = `<span class="nav__badge">${s.doneToday}/${s.totalToday}</span>`;
-      return `<a class="nav__item ${r === route ? "is-active" : ""}" href="#/${r}">${icon(d.icon)}<span>${d.title}</span>${badge}</a>`;
+      return `<a class="nav__item ${r === route ? "is-active" : ""}" href="#/${r}">${icon(d.icon)}<span class="nav__lbl"><span>${d.title}</span><small>${d.navHint || ""}</small></span>${badge}</a>`;
     }).join("");
 
     // Userchip
@@ -622,7 +644,7 @@
       <section class="section">
         <div class="card card--brand">
           <p class="muted" style="font-weight:600">${greetingByHour()},</p>
-          <h2 style="font-family:var(--font-display);font-size:1.7rem;margin:2px 0 6px">${esc(state.user.name)} 👋</h2>
+          <h2 class="hello-name">${esc(state.user.name)} 👋</h2>
           <p class="muted">${s.pending ? `Tienes <strong style="color:#fff">${s.pending}</strong> pendiente(s) en tu volcado mental y ` : "Empieza por soltar lo que traes en la cabeza. "}${s.totalToday ? `<strong style="color:#fff">${s.doneToday}/${s.totalToday}</strong> micro-bloques hechos hoy.` : "aún no tienes micro-bloques cargados."}</p>
           <div class="hstack wrap mt-16">
             <button class="btn" data-go="volcado">${icon("brain", 18)} Volcar pendientes</button>
@@ -630,6 +652,26 @@
           </div>
         </div>
         ${resume}
+      </section>
+
+      <section class="section">
+        <details class="guide" ${(s.actDone === 0 && state.brainDump.length === 0) ? "open" : ""}>
+          <summary class="guide__summary">
+            <span>${icon("help", 18)} ¿Cómo funciona esta app?</span>
+            <span class="guide__chev">${icon("chevron", 16)}</span>
+          </summary>
+          <div class="guide__body">
+            <p>Cerebro Externo es tu <strong>memoria de apoyo</strong>. En vez de tener todo dando vueltas en la cabeza, lo escribís acá, lo partís en pasos chiquitos y avanzás de a 5 minutos. Menos carga mental, sin agendas rígidas ni culpa.</p>
+            <ol class="guide__steps">
+              <li data-go="volcado"><span>1</span><div><strong>Volcá lo que tenés en la cabeza</strong><small>Pendientes, ideas, preocupaciones. Todo junto, sin ordenar.</small></div></li>
+              <li data-go="volcado"><span>2</span><div><strong>Convertí lo importante en micro-bloques</strong><small>Tocá el botón de diana en un pendiente para volverlo una acción de 5 min.</small></div></li>
+              <li data-go="plantillas"><span>3</span><div><strong>Usá una plantilla si querés una estructura lista</strong><small>Un set de micro-bloques y alertas para una situación concreta.</small></div></li>
+              <li data-go="microbloques"><span>4</span><div><strong>Avanzá en micro-bloques de 5 minutos</strong><small>Poné el reloj, hacé un paso, marcá hecho.</small></div></li>
+              <li data-go="progreso"><span>5</span><div><strong>Mirá tu progreso</strong><small>Micro-bloques del día, racha y constancia de la semana.</small></div></li>
+              <li data-go="alertas"><span>6</span><div><strong>Activá alertas si tu dispositivo las admite</strong><small>Recordatorios de agua, orden, medicinas y tiempo para vos.</small></div></li>
+            </ol>
+          </div>
+        </details>
       </section>
 
       <section class="section">
@@ -642,7 +684,7 @@
 
       <section class="section">
         <div class="section__head">
-          <div><h2>Activación en 3 pasos</h2><p>${s.actDone}/3 completados</p></div>
+          <div><h2>Tus primeros pasos</h2><p>${s.actDone}/3 completados · tocá cada uno para ir</p></div>
         </div>
         <div class="card">
           <div class="steps">
@@ -683,6 +725,11 @@
     </div>`;
   }
 
+  // Tarjeta breve que explica de qué se trata la sección (para usuarias nuevas)
+  function intro(html) {
+    return `<section class="section"><div class="card card--pad-sm intro-card">${html}</div></section>`;
+  }
+
   function blockTitle(id) {
     const b = state.blocks.find((x) => x.id === id);
     return b ? b.title : "Micro-bloque";
@@ -693,8 +740,8 @@
     return `
       <section class="section">
         <div class="card card--brand">
-          <div class="card__title" style="color:#fff">Suelta lo que traes en la cabeza</div>
-          <p class="muted">Escríbelo aquí sin ordenar ni pensar. El alivio llega al verlo fuera de tu mente.</p>
+          <div class="card__title" style="color:#fff">Volcado mental</div>
+          <p class="muted">Son esas cosas que tenés dando vueltas en la cabeza y todavía no ordenaste: pendientes, ideas, preocupaciones. Escribilas acá para sacarlas de tu mente. Después, con el botón de diana, convertís las importantes en micro-bloques de 5 minutos.</p>
         </div>
       </section>
 
@@ -703,7 +750,7 @@
           <input class="input" id="dumpInput" placeholder="Ej. Comprar leche, cita del pediatra, enviar informe…" maxlength="140" autocomplete="off" />
           <button class="btn btn--cta" type="submit">${icon("plus", 18)} Añadir</button>
         </form>
-        <p class="field__help">Consejo: una idea por línea. Luego decides qué se vuelve micro-bloque.</p>
+        <p class="field__help">Consejo: una idea por línea. No filtres nada, todo entra.</p>
 
         ${items.length ? `
           <div class="list" id="dumpList">
@@ -727,8 +774,10 @@
 
   function viewPlantillas(s) {
     return `
+      ${intro(`<p>Una <strong>plantilla</strong> es un set listo de micro-bloques y alertas pensado para una situación concreta: bebé en casa, home office o varios hijos. Elegí la que se parece a tu día y se carga sola. Conviene usarla cuando no sabés por dónde empezar. Después, solo completás los micro-bloques que aparecen.</p>`)}
+
       <section class="section">
-        <div class="section__head"><div><h2>Elige tu plantilla</h2><p>Importa en 1 clic. Puedes cambiarla cuando quieras.</p></div></div>
+        <div class="section__head"><div><h2>Elegí tu plantilla</h2><p>Se importa en 1 toque. Podés cambiarla cuando quieras.</p></div></div>
         <div class="grid grid--3">
           ${Object.entries(TEMPLATES).map(([id, t]) => `
             <div class="card card--hover tpl-card ${state.template === id ? "is-selected" : ""}" data-tpl="${id}" role="button" tabindex="0">
@@ -757,21 +806,50 @@
   }
 
   function viewAlertas(s) {
-    return `
-      <section class="section">
-        <div class="card ${state.browserNotify ? "" : "card--brand"}">
+    const ns = notifState();
+    const sysCard =
+      ns === "granted" ? `
+        <div class="card">
           <div class="spread wrap">
             <div>
-              <div class="card__title" style="${state.browserNotify ? "" : "color:#fff"}">${state.browserNotify ? "Notificaciones del navegador activas" : "Activa las notificaciones del sistema"}</div>
-              <p class="muted">Las alertas suenan mientras la app está abierta. Con permiso del navegador, también verás avisos del sistema.</p>
+              <div class="card__title">Notificaciones del sistema: activadas</div>
+              <p class="muted">Vas a recibir un aviso de tu teléfono cuando toque una tarea invisible, aunque tengas la app en segundo plano.</p>
             </div>
-            ${state.browserNotify ? `<span class="chip chip--cta">${icon("check", 15)} Listo</span>` : `<button class="btn" id="permBtn">Permitir</button>`}
+            <span class="chip chip--cta">${icon("check", 15)} Activadas</span>
           </div>
+        </div>`
+      : ns === "default" ? `
+        <div class="card card--brand">
+          <div class="spread wrap">
+            <div>
+              <div class="card__title" style="color:#fff">Activá las notificaciones del sistema</div>
+              <p class="muted">Con el permiso del navegador recibís un aviso de tu teléfono en el momento de cada tarea invisible. Podés desactivarlas cuando quieras.</p>
+            </div>
+            <button class="btn" id="permBtn">Permitir</button>
+          </div>
+        </div>`
+      : ns === "denied" ? `
+        <div class="card">
+          <div class="card__title">Notificaciones del sistema: bloqueadas</div>
+          <p class="muted">Las bloqueaste antes. Para activarlas, entrá a los ajustes de este sitio en tu navegador y permití las notificaciones. Las alertas dentro de la app siguen funcionando igual.</p>
+        </div>`
+      : `
+        <div class="card">
+          <div class="card__title">Notificaciones del sistema: no disponibles</div>
+          <p class="muted">Este navegador o dispositivo no admite notificaciones del sistema (es habitual en iPhone y en navegadores que se abren dentro de otras apps). No pasa nada: las alertas dentro de Cerebro Externo funcionan igual mientras la tengas abierta.</p>
+        </div>`;
+
+    return `
+      <section class="section">
+        ${sysCard}
+        <div class="card card--pad-sm intro-card mt-16">
+          <p><strong>Alerta en la app:</strong> aviso visual mientras estás usando Cerebro Externo. Siempre funciona.</p>
+          <p><strong>Notificación del sistema:</strong> aviso de tu teléfono aunque la app esté en segundo plano. Solo si tu dispositivo lo permite.</p>
         </div>
       </section>
 
       <section class="section">
-        <div class="section__head"><div><h2>Tus tareas invisibles</h2><p>Enciende lo que quieras delegar. Ajusta la frecuencia.</p></div></div>
+        <div class="section__head"><div><h2>Tus tareas invisibles</h2><p>Cosas que no “se ven” pero pesan. Encendé las que quieras que la app te recuerde y ajustá cada cuánto.</p></div></div>
         <div class="vstack">
           ${state.alerts.map((a) => `
             <div class="alert-row" data-id="${a.id}">
@@ -779,7 +857,6 @@
               <div class="alert-row__main">
                 <strong>${esc(a.label)}</strong>
                 <div class="alert-row__meta">
-                  <span class="chip">${icon("clock", 14)} ${fmtEvery(a.every)}</span>
                   <span class="stepper" role="group" aria-label="Frecuencia de ${esc(a.label)}">
                     <button data-act="dec" aria-label="Menos frecuencia">−</button>
                     <span>${fmtEvery(a.every)}</span>
@@ -849,6 +926,7 @@
 
     return `
       ${timerPanel}
+      ${intro(`<p>Un <strong>micro-bloque</strong> es una acción chica de 5 minutos: el primer paso de algo, no la tarea entera. <strong>“De hoy”</strong> es tu lista para el día. Tocá <strong>“5 min”</strong> para arrancar el reloj; al terminar se marca como hecho y suma a tu progreso. Podés añadir los tuyos, traerlos del Volcado mental o de una Plantilla.</p>`)}
       <section class="section">
         <div class="section__head"><div><h2>Tus micro-bloques de hoy</h2><p>${s.doneToday}/${s.totalToday} completados</p></div></div>
         <form id="blockForm" class="dumpbar">
@@ -878,6 +956,7 @@
     const activeDays = Object.values(state.history).filter((v) => v > 0).length;
 
     return `
+      ${intro(`<p>Acá ves tu constancia real: micro-bloques completados hoy, tu <strong>racha</strong> de días seguidos y cuántos hiciste en la semana. Sirve para ver el avance, sin exigencias ni comparaciones.</p>`)}
       <section class="section">
         <div class="grid grid--3">
           ${statTile("zap", s.streak, s.streak === 1 ? "día seguido" : "días seguidos")}
@@ -943,6 +1022,7 @@
   let ebookIdx = 0;
   function viewFundamento() {
     return `
+      ${intro(`<p>El <strong>método completo</strong> detrás de la app, en 5 capítulos cortos (15 min de lectura). Leelo cuando quieras entender el porqué de cada herramienta. No hace falta para empezar a usar Cerebro Externo.</p>`)}
       <section class="section">
         <div class="ebook-grid" id="ebookGrid">
           <div class="card card--pad-sm">
